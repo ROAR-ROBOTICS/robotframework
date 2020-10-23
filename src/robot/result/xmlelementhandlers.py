@@ -87,7 +87,7 @@ class SuiteHandler(_Handler):
 
     def _children(self):
         return [DocHandler(), MetadataHandler(), SuiteStatusHandler(),
-                KeywordHandler(), TestCaseHandler(), self]
+                SuiteKeywordHandler(), TestCaseHandler(), self]
 
 
 class RootSuiteHandler(SuiteHandler):
@@ -125,6 +125,17 @@ class KeywordHandler(_Handler):
         return [DocHandler(), ArgumentsHandler(), AssignHandler(),
                 TagsHandler(), TimeoutHandler(), KeywordStatusHandler(),
                 MessageHandler(), self]
+
+
+class SuiteKeywordHandler(KeywordHandler):
+
+    def start(self, elem, result):
+        type = elem.get('type', 'kw')
+        if type in ('setup', 'teardown') and 'TestSuite' in str(result.__class__):
+            return result.create_fixture(kwname=elem.get('name', ''),
+                                         libname=elem.get('library', ''),
+                                         type=type)
+        return KeywordHandler.start(self, elem, result)
 
 
 class MessageHandler(_Handler):
